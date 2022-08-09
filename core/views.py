@@ -1,8 +1,9 @@
-import profile
+
+from tkinter import Button
 from django.shortcuts import render, redirect,  get_object_or_404  
 from django.contrib.auth.models import User
 from django.contrib import auth
-from .models import Profile, Post, comment, LikePost
+from .models import Profile, Post, comment, LikePost, FolowerCount
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -13,11 +14,11 @@ def index(request):
     user_object = User.objects.get(username = request.user.username)
     user_profile = Profile.objects.get(user = user_object)
     post_feed = Post.objects.all()
-    # post_profileimg = Profile.objects.get(user = post_feed.user)
+    profile_list = Profile.objects.all()
     context={
         'user_profile': user_profile,
         'post_feed': post_feed,
-        # 'post_profileimg': post_profileimg
+        'profile_list':profile_list,
     }
     return render(request, 'index.html', context )
 @login_required(login_url='/signin', redirect_field_name='you_moust_login')
@@ -29,6 +30,24 @@ def upload(request):
         new_post = Post.objects.create(user=user, image=image, caption=caption)
         new_post.save()
         return redirect('/')
+    else:
+        return redirect('/')
+
+@login_required(login_url='/signin', redirect_field_name= 'You_moust_login' )
+def follow(request):
+    if request.method == 'POST':
+        follower = request.POST['follower']
+        user = request.POST['user']
+        
+        if FolowerCount.objects.filter(follower=follower, user = user).first():
+            delete_follower = FolowerCount.objects.get(follower=follower, user=user)
+            delete_follower.delete()
+            return redirect('/profile/'+user)
+        else :
+            new_follower = FolowerCount.objects.create(follower=follower,user=user)
+            new_follower.save()
+            return redirect('/profile/'+user)
+
     else:
         return redirect('/')
 
@@ -48,11 +67,23 @@ def profile(request, pk):
     user_profile = Profile.objects.get(user = user_object)
     user_post = Post.objects.filter(user=pk)
     user_post_length = len(user_post)
+    follower = request.user.username
+    user_follower = len(FolowerCount.objects.filter(user=pk))
+    user_following = len(FolowerCount.objects.filter(follower=pk))
+    user = pk
+    if FolowerCount.objects.filter(follower=follower, user = user).first():
+        button_text = "Unfollow"
+    else:
+        button_text = "Follow"
     context ={
+        'button_text': button_text,
         'user_object': user_object,
         'user_profile':user_profile,
         'user_post':user_post,
-        'user_post_length':user_post_length
+        'user_post_length':user_post_length,
+        'user_follower':user_follower,
+        'user_following':user_following,
+
     }
     return render(request, 'profile.html', context)
 

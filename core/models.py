@@ -1,5 +1,6 @@
 # from django.contrib.auth.models import User
 import profile
+from pyexpat import model
 from django.contrib.auth import get_user_model
 from django.db import models
 import uuid
@@ -32,14 +33,19 @@ class LikePost(models.Model):
     post_id = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
     def __str__(self):
-        return "Post id.{} by {} ".format( self.post_id, self.username)
+        return  self.username
 
 class comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return ('{}.{}').format(self.id, self.comment)
+
+class FolowerCount(models.Model):
+    follower = models.CharField(max_length= 100)
+    user     = models.CharField(max_length=100)
+    def __str__(self):
+        return self.user

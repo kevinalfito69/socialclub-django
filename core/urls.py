@@ -11,4 +11,5 @@ urlpatterns = [
   path('upload/',views.upload, name='upload'),
   path('like/',views.like, name='like'),
   path('comment/',views.commentViews, name='comment'),
+  path('follow/',views.follow, name='follow'),
 ]
